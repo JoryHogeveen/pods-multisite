@@ -11,7 +11,8 @@ Before using the sync options, please keep the following notes in mind:
 
 - Sync is not bi-directional by default. If you want to sync both ways you need to check the current site as well
 - This plugin should be enabled on every site that you want to sync FROM. The sites you sync TO don't require this plugin to be active (unless you also want to sync FROM those sites as well..) See **Sync Logic** for some config examples.
-- If you use bi-directional relationship field, please make sure the relationship fields are available in the remote site.
+- If you use relationship fields, please make sure the object you want to create a relationship with is available on the remote site.
+  - If you also use bi-directional relationship fields, please make sure the relationship field for the related object is available in the remote site.
 
 ### Sync logic
 
