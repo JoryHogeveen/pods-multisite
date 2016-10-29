@@ -1,5 +1,6 @@
 # Pods Multisite
-Supercharge Pods for your multisites
+Supercharge Pods for your multisites  
+Version: 0.1 (dev)
 
 ## Sync Pods
 
