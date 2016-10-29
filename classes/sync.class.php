@@ -51,8 +51,21 @@ class Pods_Multisite_Sync {
 		}
 
 		$pod_name = $pod['name'];
-		if ( isset( $pod['options']['old_name'] ) ) {
-			$pod_name = $pod['options']['old_name'];
+		$pod_old_name = false;
+		if ( isset( $pod['options']['old_name'] ) && $pod['options']['old_name'] != $pod['name'] ) {
+			$pod_old_name = $pod['options']['old_name'];
+		}
+
+		// Get the relationships
+		$rel = array();
+		foreach ( $pod['fields'] as $name => $field ) {
+			if ( 'pick' == $field['type'] && ! empty( $field['sister_id'] && ! empty( $field['pick_val'] ) ) ) {
+				// Load sister field by ID, no pod param needed since the ID is always unique
+				$rel[ $name ] = array(
+					'field' => $api->load_field( array( 'id' => $field['sister_id'] ), false ),
+					'pod' => $field['pick_val']
+				);
+			}
 		}
 
 		$site_id = get_current_blog_id();
@@ -67,6 +80,9 @@ class Pods_Multisite_Sync {
 			switch_to_blog( (int) $site );
 
 			$remote_pod = $api->load_pod( $pod_name, false );
+			if ( ! $remote_pod && $pod_old_name ) {
+				$remote_pod = $api->load_pod( $pod_old_name, false );
+			}
 			$store_pod = $pod;
 
 			/*if ( false === $remote_pod ) {
@@ -77,10 +93,47 @@ class Pods_Multisite_Sync {
 			}*/
 
 			if ( false !== $remote_pod ) {
+				// The remote Pod already exists, use it's ID.
 				$store_pod['id'] = $remote_pod['id'];
-				foreach ( $remote_pod['fields'] as $name => $field ) {
-					if ( isset( $store_pod['fields'][ $name ] ) ) {
-						$store_pod['fields'][ $name ]['id'] = $field['id'];
+
+				/**
+				 * Loop through all fields
+				 * If the field exists in the remote Pod, then overwrite it's ID (post id)
+				 * Also checks the old_name as a fallback for when a field name is changed
+				 */
+				foreach ( $store_pod['fields'] as $field ) {
+					// The remote Pod already exists, use it's ID.
+					$store_pod['fields'][ $name ]['pod_id'] = $remote_pod['id'];
+
+					$name = $field['name'];
+					$old_name = false;
+					if ( ! empty( $field['options']['old_name'] ) && $field['options']['old_name'] != $name ) {
+						$old_name = $field['options']['old_name'];
+					}
+
+					if ( isset( $remote_pod['fields'][ $name ] ) ) {
+						$store_pod['fields'][ $name ]['id'] = $remote_pod['fields'][ $name ]['id'];
+					}
+					elseif ( $old_name && isset( $remote_pod['fields'][ $old_name ] ) ) {
+						$store_pod['fields'][ $name ]['id'] = $remote_pod['fields'][ $old_name ]['id'];
+					}
+				}
+			}
+
+			// Sync the relationships
+			foreach ( $rel as $name => $field ) {
+				if ( false != $field['field'] ) {
+					// Fetch by name and pod, we don't know the ID
+					$sister_params = array(
+						'pod' => $field['pod'],
+						'name' => $field['field']['name']
+					);
+					$sister = $api->load_field( $sister_params, false );
+					if ( false != $sister ) {
+						$store_pod['fields'][ $name ]['sister_id'] = $sister['id'];
+					} else {
+						// No valid sister field found in other site
+						$store_pod['fields'][ $name ]['sister_id'] = false;
 					}
 				}
 			}
