@@ -5,6 +5,7 @@ Version: 0.1 (dev)
 ## Sync Pods
 
 Sync your Pods accross your network of sites  
+_Note: This will only sync your Pod configuration, not your data!_  
 Before using the sync options, please keep the following notes in mind:
 
 - Sync is not bi-directional by default. If you want to sync both ways you need to check the current site as well
