@@ -25,7 +25,7 @@ class Pods_Multisite_Sync {
 	/**
 	 * Pods_Multisite_Sync constructor.
 	 */
-	function __construct() {
+	private function __construct() {
 		// @todo Non ajax method
 		add_action( 'pods_admin_ajax_success_save_pod', array( $this, 'sync_pod' ) );
 
@@ -34,9 +34,9 @@ class Pods_Multisite_Sync {
 	}
 
 	/**
-	 * @param $pod (optional) a Pod
+	 * @param mixed $pod (optional) a Pod name or array data
 	 */
-	function sync_pod( $pod ) {
+	public function sync_pod( $pod ) {
 
 		$api = pods_api();
 		$pod = $api->load_pod( $pod );
@@ -68,6 +68,7 @@ class Pods_Multisite_Sync {
 			}
 		}
 
+		// Get the current site ID before it gets overwritten by the loop (switch_to_blog)
 		$site_id = get_current_blog_id();
 
 		foreach( $pod['options']['multisite_sync_to_sites'] as $site ) {
@@ -77,20 +78,19 @@ class Pods_Multisite_Sync {
 				continue;
 			}
 
+			/**
+			 * Switch to the remote site
+			 * All API calls will get the remote data from here
+			 */
 			switch_to_blog( (int) $site );
+
+			// The Pod info to be synced, this will overwrite existing data on the other sites
+			$store_pod = $pod;
 
 			$remote_pod = $api->load_pod( $pod_name, false );
 			if ( ! $remote_pod && $pod_old_name ) {
 				$remote_pod = $api->load_pod( $pod_old_name, false );
 			}
-			$store_pod = $pod;
-
-			/*if ( false === $remote_pod ) {
-				$add_pod = array(
-					'name' => $store_pod['name']
-				);
-				$api->add_pod( $store_pod );
-			}*/
 
 			if ( false !== $remote_pod ) {
 				// The remote Pod already exists, use it's ID.
@@ -120,7 +120,7 @@ class Pods_Multisite_Sync {
 				}
 			}
 
-			// Sync the relationships
+			// Sync the relationship field data
 			foreach ( $rel as $name => $field ) {
 				if ( false != $field['field'] ) {
 					// Fetch by name and pod, we don't know the ID
@@ -177,7 +177,7 @@ class Pods_Multisite_Sync {
 				'default' => '',
 				'pick_object' => 'site',
 				'pick_format_type' => 'multi'
-			),
+			)
 		);
 
 		return $options;
