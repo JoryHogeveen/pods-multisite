@@ -1,7 +1,7 @@
-# pods-multisite
+# Pods Multisite
 Supercharge Pods for your multisites
 
-# Sync Pods
+## Sync Pods
 
 Sync your Pods accross your network of sites  
 Before using the sync options, please keep the following notes in mind:
