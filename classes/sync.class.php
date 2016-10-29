@@ -7,6 +7,8 @@
 
 class Pods_Multisite_Sync {
 
+	private $option = 'multisite_sync_to_sites';
+
 	/**
 	 * @var Pods_Multisite_Sync
 	 */
@@ -41,7 +43,7 @@ class Pods_Multisite_Sync {
 		$api = pods_api();
 		$pod = $api->load_pod( $pod );
 
-		if ( empty( $pod['options']['multisite_sync_to_sites'] ) || ! is_array( $pod['options']['multisite_sync_to_sites'] ) ) {
+		if ( empty( $pod['options'][ $this->option ] ) || ! is_array( $pod['options'][ $this->option ] ) ) {
 			return;
 		}
 
@@ -71,7 +73,7 @@ class Pods_Multisite_Sync {
 		// Get the current site ID before it gets overwritten by the loop (switch_to_blog)
 		$site_id = get_current_blog_id();
 
-		foreach( $pod['options']['multisite_sync_to_sites'] as $site ) {
+		foreach( $pod['options'][ $this->option ] as $site ) {
 
 			// Do not run sync if it's the current site + validate site value to a number (site id)
 			if ( ! is_numeric( $site ) || $site_id == (int) $site ) {
@@ -169,7 +171,7 @@ class Pods_Multisite_Sync {
 	public function pod_settings_options( $options ) {
 
 		$options[ 'pods-multisite' ] = array(
-			'multisite_sync_to_sites' => array(
+			$this->option => array(
 				'label' => __( 'Sync this Pod with other sites', 'pods-multisite' ),
 				'help' => __( 'This overwrites the the remote Pod data', 'pods-multisite' ),
 				'description' => __( 'Sync is not bi-directional by default. If you want to sync both ways you need to check the current site as well', 'pods-multisite' ),
