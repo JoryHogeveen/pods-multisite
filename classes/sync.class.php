@@ -159,7 +159,9 @@ class Pods_Multisite_Sync {
 	 * @return array
 	 */
 	public function pod_settings_tab( $tabs ) {
-		$tabs[ $this->tab ] = __( 'Multisite', 'pods-multisite' );
+		if ( empty( $tabs[ $this->tab ] ) ) {
+			$tabs[ $this->tab ] = __( 'Multisite', 'pods-multisite' );
+		}
 		return $tabs;
 	}
 
