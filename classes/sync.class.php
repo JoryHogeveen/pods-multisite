@@ -9,6 +9,8 @@ class Pods_Multisite_Sync {
 
 	private $option = 'multisite_sync_to_sites';
 
+	private $tab = 'pods-multisite';
+
 	/**
 	 * @var Pods_Multisite_Sync
 	 */
@@ -157,7 +159,7 @@ class Pods_Multisite_Sync {
 	 * @return array
 	 */
 	public function pod_settings_tab( $tabs ) {
-		$tabs[ 'pods-multisite' ] = __( 'Multisite', 'pods-multisite' );
+		$tabs[ $this->tab ] = __( 'Multisite', 'pods-multisite' );
 		return $tabs;
 	}
 
@@ -170,7 +172,7 @@ class Pods_Multisite_Sync {
 	 */
 	public function pod_settings_options( $options ) {
 
-		$options[ 'pods-multisite' ] = array(
+		$options[ $this->tab ] = array(
 			$this->option => array(
 				'label' => __( 'Sync this Pod with other sites', 'pods-multisite' ),
 				'help' => __( 'This overwrites the the remote Pod data', 'pods-multisite' ),
