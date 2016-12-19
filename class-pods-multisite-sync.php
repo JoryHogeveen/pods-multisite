@@ -94,7 +94,7 @@ class Pods_Multisite_Sync {
 	 */
 	public function sync_migrate( array $found, array $pod_data ) {
 		foreach ( $pod_data['pods'] as $pod ) {
-			$this->sync_pod( $pod );
+			$this->sync_pod( pods_api()->load_pod( $pod ) );
 		}
 	}
 
