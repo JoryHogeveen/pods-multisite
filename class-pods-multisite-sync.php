@@ -28,7 +28,7 @@ class Pods_Multisite_Sync {
 	private function __construct() {
 		// @todo Non ajax method
 		add_action( 'pods_admin_ajax_success_save_pod', array( $this, 'sync_pod' ) );
-		add_action( 'pods_packages_import', array( $this, 'sync_migrate' ) );
+		add_action( 'pods_packages_import', array( $this, 'sync_migrate' ), 10, 2 );
 
 		add_filter( 'pods_admin_setup_edit_tabs', array( $this, 'pod_settings_tab' ) );
 		add_filter( 'pods_admin_setup_edit_options', array( $this, 'pod_settings_options' ) );
@@ -92,7 +92,7 @@ class Pods_Multisite_Sync {
 	/**
 	 * @param array $pod_data
 	 */
-	public function sync_migrate( array $pod_data ) {
+	public function sync_migrate( array $found, array $pod_data ) {
 		foreach ( $pod_data['pods'] as $pod ) {
 			$this->sync_pod( $pod );
 		}
