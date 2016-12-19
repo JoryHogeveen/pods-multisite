@@ -1,30 +1,26 @@
 <?php
+
 /**
  * Class Pods_Multisite_Sync
  */
-
-! defined( 'PODS_MULTISITE_DIR' ) and die();
-
 class Pods_Multisite_Sync {
 
-	private $option = 'multisite_sync_to_sites';
-
-	private $tab = 'pods-multisite';
-
+	/**
+	 * Plugin version
+	 */
+	const VERSION = '0.1';
 	/**
 	 * @var Pods_Multisite_Sync
 	 */
 	private static $instance;
-
 	/**
-	 * @return Pods_Multisite_Sync
+	 * @var string
 	 */
-	public static function get_instance() {
-		if ( ! self::$instance ) {
-			self::$instance = new self;
-		}
-		return self::$instance;
-	}
+	private $option = 'multisite_sync_to_sites';
+	/**
+	 * @var string
+	 */
+	private $tab = 'pods-multisite';
 
 	/**
 	 * Pods_Multisite_Sync constructor.
@@ -35,6 +31,17 @@ class Pods_Multisite_Sync {
 
 		add_filter( 'pods_admin_setup_edit_tabs', array( $this, 'pod_settings_tab' ) );
 		add_filter( 'pods_admin_setup_edit_options', array( $this, 'pod_settings_options' ) );
+	}
+
+	/**
+	 * @return Pods_Multisite_Sync
+	 */
+	public static function get_instance() {
+		if ( ! self::$instance ) {
+			self::$instance = new self;
+		}
+
+		return self::$instance;
 	}
 
 	/**
