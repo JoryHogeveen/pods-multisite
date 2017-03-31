@@ -29,29 +29,31 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
 ! defined( 'ABSPATH' ) and die();
-
-define( 'PODS_MULTISITE_VERSION', '0.1' );
-define( 'PODS_MULTISITE_URL', plugin_dir_url( __FILE__ ) );
-define( 'PODS_MULTISITE_DIR', plugin_dir_path( __FILE__ ) );
-
 /**
- * @global Pods_Multisite_Sync $pods_multisite
+ * Initialize plugin
  */
-global $pods_multisite;
-
 function pods_init_multisite() {
 
 	if ( ! is_multisite() || ! function_exists( 'pods' ) ) {
 		return;
 	}
 
-	load_plugin_textdomain( 'pods-multisite', false, PODS_MULTISITE_DIR . 'languages/' );
+	load_plugin_textdomain( 'pods-multisite', false, plugin_dir_path( __FILE__ ) . 'languages/' );
 
-	require_once PODS_MULTISITE_DIR . 'classes/sync.class.php';
 
-	global $pods_multisite;
-
-	$pods_multisite = Pods_Multisite_Sync::get_instance();
+	pods_multisite();
 
 }
+
+/**
+ * Function helper to return plugin instance
+ *
+ * @return \Pods_Multisite_Sync
+ */
+function pods_multisite() {
+	require_once plugin_dir_path( __FILE__ ) . 'class-pods-multisite-sync.php';
+
+	return Pods_Multisite_Sync::get_instance();
+}
+
 add_action( 'init', 'pods_init_multisite' );

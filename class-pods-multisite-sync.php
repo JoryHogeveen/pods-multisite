@@ -1,20 +1,38 @@
 <?php
+
 /**
  * Class Pods_Multisite_Sync
  */
-
-! defined( 'PODS_MULTISITE_DIR' ) and die();
-
 class Pods_Multisite_Sync {
 
-	private $option = 'multisite_sync_to_sites';
-
-	private $tab = 'pods-multisite';
-
+	/**
+	 * Plugin version
+	 */
+	const VERSION = '0.1';
 	/**
 	 * @var Pods_Multisite_Sync
 	 */
 	private static $instance;
+	/**
+	 * @var string
+	 */
+	private $option = 'multisite_sync_to_sites';
+	/**
+	 * @var string
+	 */
+	private $tab = 'pods-multisite';
+
+	/**
+	 * Pods_Multisite_Sync constructor.
+	 */
+	private function __construct() {
+		// @todo Non ajax method
+		add_action( 'pods_admin_ajax_success_save_pod', array( $this, 'sync_pod' ) );
+		add_action( 'pods_packages_import', array( $this, 'sync_migrate' ), 10, 2 );
+
+		add_filter( 'pods_admin_setup_edit_tabs', array( $this, 'pod_settings_tab' ) );
+		add_filter( 'pods_admin_setup_edit_options', array( $this, 'pod_settings_options' ) );
+	}
 
 	/**
 	 * @return Pods_Multisite_Sync
@@ -23,18 +41,61 @@ class Pods_Multisite_Sync {
 		if ( ! self::$instance ) {
 			self::$instance = new self;
 		}
+
 		return self::$instance;
 	}
 
 	/**
-	 * Pods_Multisite_Sync constructor.
+	 * The multisite option tab.
+	 *
+	 * @since  0.1
+	 *
+	 * @param  array $tabs
+	 *
+	 * @return array
 	 */
-	private function __construct() {
-		// @todo Non ajax method
-		add_action( 'pods_admin_ajax_success_save_pod', array( $this, 'sync_pod' ) );
+	public function pod_settings_tab( $tabs ) {
+		if ( empty( $tabs[ $this->tab ] ) ) {
+			$tabs[ $this->tab ] = __( 'Multisite', 'pods-multisite' );
+		}
 
-		add_filter( 'pods_admin_setup_edit_tabs', array( $this, 'pod_settings_tab' ) );
-		add_filter( 'pods_admin_setup_edit_options', array( $this, 'pod_settings_options' ) );
+		return $tabs;
+	}
+
+	/**
+	 * The mutisite options
+	 *
+	 * @since  0.1
+	 *
+	 * @param  array $options
+	 *
+	 * @return array
+	 */
+	public function pod_settings_options( $options ) {
+
+		$options[ $this->tab ] = array(
+			$this->option => array(
+				'label'            => __( 'Sync this Pod with other sites', 'pods-multisite' ),
+				'help'             => __( 'This overwrites the the remote Pod data', 'pods-multisite' ),
+				'description'      => __( 'Sync is not bi-directional by default. If you want to sync both ways you need to check the current site as well', 'pods-multisite' ),
+				'type'             => 'pick',
+				'default'          => '',
+				'pick_object'      => 'site',
+				'pick_format_type' => 'multi',
+			),
+		);
+
+		return $options;
+
+	}
+
+	/**
+	 * @param array $pod_data
+	 */
+	public function sync_migrate( array $found, array $pod_data ) {
+		foreach ( $pod_data['pods'] as $pod ) {
+			$this->sync_pod( pods_api()->load_pod( $pod ) );
+		}
 	}
 
 	/**
@@ -67,7 +128,7 @@ class Pods_Multisite_Sync {
 				// Load sister field by ID, no pod param needed since the ID is always unique
 				$rel[ $name ] = array(
 					'field' => $api->load_field( array( 'id' => $field['sister_id'] ), false ),
-					'pod' => $field['pick_val']
+					'pod'   => $field['pick_val'],
 				);
 			}
 		}
@@ -75,7 +136,7 @@ class Pods_Multisite_Sync {
 		// Get the current site ID before it gets overwritten by the loop (switch_to_blog)
 		$site_id = get_current_blog_id();
 
-		foreach( $pod['options'][ $this->option ] as $site ) {
+		foreach ( $pod['options'][ $this->option ] as $site ) {
 
 			// Do not run sync if it's the current site + validate site value to a number (site id)
 			if ( ! is_numeric( $site ) || $site_id == (int) $site ) {
@@ -117,8 +178,7 @@ class Pods_Multisite_Sync {
 
 					if ( isset( $remote_pod['fields'][ $name ] ) ) {
 						$store_pod['fields'][ $name ]['id'] = $remote_pod['fields'][ $name ]['id'];
-					}
-					elseif ( $old_name && isset( $remote_pod['fields'][ $old_name ] ) ) {
+					} elseif ( $old_name && isset( $remote_pod['fields'][ $old_name ] ) ) {
 						$store_pod['fields'][ $name ]['id'] = $remote_pod['fields'][ $old_name ]['id'];
 					}
 				}
@@ -129,10 +189,10 @@ class Pods_Multisite_Sync {
 				if ( false != $field['field'] ) {
 					// Fetch by name and pod, we don't know the ID
 					$sister_params = array(
-						'pod' => $field['pod'],
-						'name' => $field['field']['name']
+						'pod'  => $field['pod'],
+						'name' => $field['field']['name'],
 					);
-					$sister = $api->load_field( $sister_params, false );
+					$sister        = $api->load_field( $sister_params, false );
 					if ( false != $sister ) {
 						$store_pod['fields'][ $name ]['sister_id'] = $sister['id'];
 					} else {
@@ -148,45 +208,5 @@ class Pods_Multisite_Sync {
 		}
 
 		restore_current_blog();
-	}
-
-
-	/**
-	 * The multisite option tab.
-	 *
-	 * @since  0.1
-	 * @param  array $tabs
-	 * @return array
-	 */
-	public function pod_settings_tab( $tabs ) {
-		if ( empty( $tabs[ $this->tab ] ) ) {
-			$tabs[ $this->tab ] = __( 'Multisite', 'pods-multisite' );
-		}
-		return $tabs;
-	}
-
-	/**
-	 * The mutisite options
-	 *
-	 * @since  0.1
-	 * @param  array $options
-	 * @return array
-	 */
-	public function pod_settings_options( $options ) {
-
-		$options[ $this->tab ] = array(
-			$this->option => array(
-				'label' => __( 'Sync this Pod with other sites', 'pods-multisite' ),
-				'help' => __( 'This overwrites the the remote Pod data', 'pods-multisite' ),
-				'description' => __( 'Sync is not bi-directional by default. If you want to sync both ways you need to check the current site as well', 'pods-multisite' ),
-				'type' => 'pick',
-				'default' => '',
-				'pick_object' => 'site',
-				'pick_format_type' => 'multi'
-			)
-		);
-
-		return $options;
-
 	}
 }
