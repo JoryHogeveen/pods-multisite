@@ -21,7 +21,7 @@ Before using the sync options, please keep the following notes in mind:
 Make one of your sites your "master" site and sync to your other sites.
 
 1. Activate Pods on all sites
-2. Activate Pods Multisite on you site you want to sync from (most likely your primary site)
+2. Activate Pods Multisite on the site you want to sync from (most likely your primary site)
 3. Enable synchronisation on your Pods. This needs to be set for every Pod.
 4. Every time you save a Pod **on your master site** the options and configuration will be synced to the sites you have enabled for synchronisation.
 
