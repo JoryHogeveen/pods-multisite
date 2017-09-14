@@ -124,7 +124,7 @@ class Pods_Multisite_Sync {
 		// Get the relationships
 		$rel = array();
 		foreach ( $pod['fields'] as $name => $field ) {
-			if ( 'pick' == $field['type'] && ! empty( $field['sister_id'] && ! empty( $field['pick_val'] ) ) ) {
+			if ( 'pick' == $field['type'] && ! empty( $field['sister_id'] ) && ! empty( $field['pick_val'] ) ) {
 				// Load sister field by ID, no pod param needed since the ID is always unique
 				$rel[ $name ] = array(
 					'field' => $api->load_field( array( 'id' => $field['sister_id'] ), false ),
